@@ -1,0 +1,55 @@
+name: docker-hardened-comparisons
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  workflow_dispatch:
+
+env:
+  COMMON_IMAGE: 'mcr.microsoft.com/dotnet/sdk:10.0.101'
+  DOCKER_HARDENED_IMAGE: 'dhi.io/dotnet:10.0.101-sdk'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Login no registry do Docker Hardened Images
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: dhi.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PAT }}
+          
+      - name: Baixar imagem convencional
+        run: docker pull ${{ env.COMMON_IMAGE }}
+
+      - name: Baixar imagem hardened
+        run: docker pull ${{ env.DOCKER_HARDENED_IMAGE }}
+        
+      - name: Exibir imagens no ambiente
+        run: docker images
+
+      - name: Login no Docker Hub (para uso do utilitario docker scout)
+        uses: docker/login-action@v3.6.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PAT }}
+          
+      - name: Instalar o docker scout
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh -o install-scout.sh
+          sh install-scout.sh
+
+      - name: Testar instalacao do docker scout
+        run: docker scout
+
+      - name: Executar comparativo entre imagens
+        run: |
+          docker scout compare ${{ env.DOCKER_HARDENED_IMAGE }} \
+              --to ${{ env.COMMON_IMAGE }} \
+              --platform linux/amd64 \
+              --ignore-unchanged
