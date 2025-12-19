@@ -1,2 +1,2 @@
-# docker-hardened-comparison
+# docker-hardened-comparisons
 Testes com Docker Hardened Images
