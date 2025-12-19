@@ -21,37 +21,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Login no registry do Docker Hardened Images
+      - name: Login to the Docker Hardened Images registry -- Login no registry do Docker Hardened Images
         uses: docker/login-action@v3.6.0
         with:
           registry: dhi.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PAT }}
           
-      - name: Baixar imagem convencional
+      - name: Download common image -- Baixar imagem convencional
         run: docker pull ${{ env.COMMON_IMAGE }}
 
-      - name: Baixar imagem hardened
+      - name: Download hardened image -- Baixar imagem hardened
         run: docker pull ${{ env.DOCKER_HARDENED_IMAGE }}
         
-      - name: Exibir imagens no ambiente
+      - name: Display images in the environment -- Exibir imagens no ambiente
         run: docker images
 
-      - name: Login no Docker Hub (para uso do utilitario docker scout)
+      - name: Login to Docker Hub (to use the docker scout utility) -- Login no Docker Hub (para uso do utilitario docker scout)
         uses: docker/login-action@v3.6.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PAT }}
           
-      - name: Instalar o docker scout
+      - name: Install Docker Scout -- Instalar o docker scout
         run: |
           curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh -o install-scout.sh
           sh install-scout.sh
 
-      - name: Testar instalacao do docker scout
+      - name: Testing the Docker Scout installation -- Testar instalacao do Docker Scout
         run: docker scout
 
-      - name: Executar comparativo entre imagens
+      - name: Perform a comparison between images -- Executar comparativo entre imagens
         run: |
           docker scout compare ${{ env.DOCKER_HARDENED_IMAGE }} \
               --to ${{ env.COMMON_IMAGE }} \
